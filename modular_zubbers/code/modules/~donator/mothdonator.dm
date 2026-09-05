@@ -60,7 +60,7 @@
 		/datum/pet_command/free,
 		/datum/pet_command/follow/start_active,
 		/datum/pet_command/nuzzle,
-		/datum/pet_command/good_boy,
+		/datum/pet_command/good_boy/mr_fluff,
 	)
 
 /mob/living/basic/mothroach/mr_fluff/Initialize(mapload)
@@ -95,11 +95,23 @@
 	parent.visible_message(span_notice("[parent] doesn't know what to do with [pointed_atom]."))
 	return FALSE
 
+/datum/pet_command/nuzzle/on_target_set(mob/living/friend, atom/potential_target)
+	. = ..()
+	if(!.)
+		return
+	var/mob/living/parent = weak_parent.resolve()
+	execute_action(parent.ai_controller)
+
 /datum/pet_command/nuzzle/execute_action(datum/ai_controller/controller)
 	var/atom/nuzzle_target = controller.blackboard[BB_CURRENT_PET_TARGET]
 	if(QDELETED(nuzzle_target))
 		return
 	controller.set_behavior_tree_override(SUBPLAN_ID_PET_COMMAND, /datum/bt_node/subtree/pet_command/nuzzle)
+
+/// Praise leaves his current command alone.
+/datum/pet_command/good_boy/mr_fluff/set_command_active(mob/living/parent, mob/living/commander, radial_command = FALSE)
+	new /obj/effect/temp_visual/heart(parent.loc)
+	parent.emote("spin")
 
 /datum/bt_node/subtree/pet_command/nuzzle
 	behavior_tree_json = "modular_zubbers/code/modules/~donator/mothdonator_nuzzle.bt.json"
